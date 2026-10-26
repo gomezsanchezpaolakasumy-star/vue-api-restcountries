@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Evidencias de cumplimiento · Explorador de Países</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #172033;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .pagina {
+    position: relative;
+    width: 210mm;
+    height: 297mm;
+    padding: 14mm 15mm 11mm;
+    overflow: hidden;
+    page-break-after: always;
+    background: #fff;
+  }
+  .pagina:last-child { page-break-after: auto; }
+  .franja {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3.2mm;
+    background: linear-gradient(90deg, #0f2a5c, #1d4ed8 55%, #f97316);
+  }
+  .encabezado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6mm;
+    color: #64748b;
+    font-size: 8.5pt;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .numero {
+    padding: 1.2mm 3mm;
+    border-radius: 999px;
+    background: #e8efff;
+    color: #1d4ed8;
+    font-weight: 800;
+  }
+  .materia { font-weight: 600; }
+  .titulo-evidencia {
+    max-width: 175mm;
+    margin: 0;
+    color: #0f2a5c;
+    font-size: 19pt;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .subtitulo-evidencia {
+    margin: 1.5mm 0 4mm;
+    color: #64748b;
+    font-size: 10.5pt;
+    font-weight: 600;
+  }
+  .marco-navegador {
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid #cbd5e1;
+    border-radius: 3mm;
+    box-shadow: 0 3mm 8mm rgba(15, 42, 92, 0.13);
+  }
+  .barra-navegador {
+    display: flex;
+    align-items: center;
+    gap: 4mm;
+    height: 9mm;
+    padding: 0 4mm;
+    background: #f1f5f9;
+    border-bottom: 1px solid #dbe3ee;
+  }
+  .barra-navegador .puntos { display: flex; gap: 1.4mm; }
+  .barra-navegador .puntos i { width: 2.6mm; height: 2.6mm; border-radius: 50%; background: #cbd5e1; }
+  .barra-navegador .puntos i:nth-child(1) { background: #fca5a5; }
+  .barra-navegador .puntos i:nth-child(2) { background: #fcd34d; }
+  .barra-navegador .puntos i:nth-child(3) { background: #86efac; }
+  .barra-navegador .url {
+    flex: 1;
+    overflow: hidden;
+    padding: 1.2mm 3mm;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    background: #fff;
+    color: #475569;
+    font-size: 8pt;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .marco-navegador img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .marco-codigo {
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid #30363d;
+    border-radius: 3mm;
+    background: #0d1117;
+    box-shadow: 0 3mm 8mm rgba(15, 23, 42, 0.18);
+  }
+  .marco-codigo img { display: block; width: 100%; height: auto; }
+  .explicacion {
+    margin-top: 6mm;
+    padding: 4mm 5mm;
+    border-left: 1.5mm solid #1d4ed8;
+    border-radius: 0 2mm 2mm 0;
+    background: #f8fafc;
+  }
+  .explicacion h3 {
+    margin: 0 0 1.5mm;
+    color: #0f2a5c;
+    font-size: 10pt;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .explicacion p {
+    margin: 0;
+    color: #334155;
+    font-size: 10pt;
+    line-height: 1.5;
+    text-align: justify;
+  }
+  .ruta-archivo { margin-top: 2.5mm !important; color: #64748b !important; font-size: 8.5pt !important; }
+  code {
+    padding: 0.2mm 1.2mm;
+    border-radius: 1mm;
+    background: #e8efff;
+    color: #1e40af;
+    font-family: Consolas, monospace;
+    font-size: 0.95em;
+  }
+  .pie-pagina {
+    position: absolute;
+    bottom: 7mm;
+    left: 15mm;
+    right: 15mm;
+    display: flex;
+    justify-content: space-between;
+    padding-top: 2.5mm;
+    border-top: 1px solid #e2e8f0;
+    color: #94a3b8;
+    font-size: 8pt;
+  }
+
+  /* Portada */
+  .pagina--portada {
+    padding: 0;
+    background: linear-gradient(145deg, #081a3a 0%, #0f2a5c 46%, #1d4ed8 100%);
+    color: #fff;
+  }
+  .portada-contenido {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 28mm 22mm 18mm;
+  }
+  .portada-decoracion {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(2px);
+    opacity: 0.45;
+  }
+  .portada-decoracion--uno {
+    top: -55mm; right: -45mm;
+    width: 150mm; height: 150mm;
+    background: radial-gradient(circle, rgba(249,115,22,.65), transparent 65%);
+  }
+  .portada-decoracion--dos {
+    bottom: -60mm; left: -35mm;
+    width: 140mm; height: 140mm;
+    background: radial-gradient(circle, rgba(56,189,248,.55), transparent 65%);
+  }
+  .portada-etiqueta {
+    align-self: flex-start;
+    margin: 0;
+    padding: 2mm 4mm;
+    border: 1px solid rgba(255,255,255,.28);
+    border-radius: 999px;
+    background: rgba(255,255,255,.1);
+    font-size: 8.5pt;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+  }
+  .pagina--portada h1 {
+    margin: 10mm 0 0;
+    font-size: 48pt;
+    line-height: 0.98;
+    letter-spacing: -0.045em;
+  }
+  .portada-bajada {
+    max-width: 140mm;
+    margin: 7mm 0 0;
+    color: rgba(255,255,255,.82);
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+  .portada-datos {
+    margin-top: 18mm;
+    padding: 6mm;
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 3mm;
+    background: rgba(255,255,255,.08);
+    backdrop-filter: blur(4px);
+  }
+  .portada-datos p {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8mm;
+    margin: 0;
+    padding: 2.4mm 0;
+    border-bottom: 1px solid rgba(255,255,255,.12);
+  }
+  .portada-datos p:last-child { border-bottom: 0; }
+  .portada-datos span { color: rgba(255,255,255,.66); font-size: 8.5pt; text-transform: uppercase; letter-spacing: .1em; }
+  .portada-datos strong { font-size: 11pt; text-align: right; }
+  .portada-caracteristicas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2.5mm;
+    margin-top: 7mm;
+  }
+  .portada-caracteristicas span {
+    padding: 2.2mm 4mm;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 8.5pt;
+    font-weight: 600;
+  }
+  .portada-enlaces {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3mm;
+    margin-top: auto;
+    padding-top: 8mm;
+  }
+  .portada-enlaces a {
+    padding: 3mm 5mm;
+    border: 1px solid rgba(255,255,255,.28);
+    border-radius: 999px;
+    background: rgba(255,255,255,.1);
+    color: #fff;
+    font-size: 9pt;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .portada-pie {
+    margin: 5mm 0 0;
+    color: rgba(255,255,255,.5);
+    font-size: 8pt;
+  }
+  .numero-portada {
+    position: absolute;
+    right: 22mm;
+    bottom: 12mm;
+    color: rgba(255,255,255,.55);
+    font-size: 8pt;
+  }
+
+  /* Checklist */
+  .checklist { margin: 2mm 0 0; padding: 0; list-style: none; }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 3mm;
+    padding: 2.2mm 0;
+    border-bottom: 1px solid #e8eef7;
+    color: #334155;
+    font-size: 9.8pt;
+  }
+  .checklist .check {
+    display: inline-grid;
+    flex: 0 0 auto;
+    width: 5.5mm;
+    height: 5.5mm;
+    place-items: center;
+    border-radius: 50%;
+    background: #dcfce7;
+    color: #15803d;
+    font-size: 8pt;
+    font-weight: 800;
+  }
+  .entrega, .nota {
+    margin-top: 7mm;
+    padding: 5mm;
+    border: 1px solid #dbe6f7;
+    border-radius: 3mm;
+    background: #f8fbff;
+  }
+  .entrega h3, .nota h3 {
+    margin: 0 0 2.5mm;
+    color: #0f2a5c;
+    font-size: 10.5pt;
+  }
+  .entrega p { margin: 0 0 1.5mm; font-size: 8.8pt; }
+  .entrega p span { display: inline-block; width: 28mm; color: #64748b; font-weight: 700; }
+  .entrega a { color: #1d4ed8; text-decoration: none; overflow-wrap: anywhere; }
+  .nota p { margin: 0; color: #475569; font-size: 9pt; line-height: 1.5; text-align: justify; }
+
+  /* Vista previa en pantalla */
+  @media screen {
+    body { display: flex; flex-direction: column; align-items: center; gap: 6mm; padding: 6mm; background: #dbe3ee; }
+    .pagina { box-shadow: 0 4mm 12mm rgba(15, 23, 42, .18); }
+  }
+</style>
+</head>
+<body>
+  
+  <section class="pagina pagina--portada">
+    <div class="portada-decoracion portada-decoracion--uno"></div>
+    <div class="portada-decoracion portada-decoracion--dos"></div>
+    <div class="portada-contenido">
+      <p class="portada-etiqueta">Evidencias de cumplimiento</p>
+      <h1>Explorador<br />de Países</h1>
+      <p class="portada-bajada">Aplicación web con Vue 3 que consume la API REST Countries mediante fetch(), estructuras de control y enlace de datos.</p>
+
+      <div class="portada-datos">
+        <p><span>Estudiante</span><strong>Paola Kasumy Gómez Sánchez</strong></p>
+        <p><span>Proyecto</span><strong>Consumo de API con Vue 3</strong></p>
+        <p><span>Fecha</span><strong>Octubre de 2026</strong></p>
+      </div>
+
+      <div class="portada-caracteristicas">
+        <span>fetch() + onMounted()</span>
+        <span>v-for · v-if · v-model</span>
+        <span>ref() + computed()</span>
+        <span>GitHub Pages</span>
+      </div>
+
+      <div class="portada-enlaces">
+        <a href="https://github.com/gomezsanchezpaolakasumy-star/vue-api-restcountries">Repositorio en GitHub</a>
+        <a href="https://gomezsanchezpaolakasumy-star.github.io/vue-api-restcountries/">Sitio en GitHub Pages</a>
+      </div>
+
+      <p class="portada-pie">Documento generado a partir de capturas reales de la aplicación publicada.</p>
+    </div>
+    <span class="numero-portada">Página 1 de 20</span>
+  </section>
+  
+  <section class="pagina pagina--evidencia">
+    <div class="franja"></div>
+    <header class="encabezado">
+      <span class="numero">Evidencia 1</span>
+      <span class="materia">Vue 3 · API REST Countries</span>
+    </header>
+    <h2 class="titulo-evidencia">Publicación en GitHub Pages</h2>
+    <p class="subtitulo-evidencia">Captura de la interfaz</p>
+    <figure class="marco-navegador">
+      <div class="barra-navegador">
+        <span class="puntos"><i></i><i></i><i></i></span>
+        <span class="url">https://gomezsanchezpaolakasumy-star.github.io/vue-api-restcountries/</span>
+      </div>
+      <img src="capturas/sitio-publicado.png" alt="Captura de la interfaz: Publicación en GitHub Pages" />
+    </figure>
+    <div class="explicacion">
+      <h3>Explicación</h3>
+      <p>El sitio se publica desde la rama gh-pages del repositorio y es accesible en la URL pública que se muestra en la barra del navegador. La captura evidencia la aplicación compilada funcionando con su catálogo y sus filtros.</p>
+    </div>
+    <footer class="pie-pagina">
+      <span>Explorador de Países · Evidencias de cumplimiento</span>
+      <span>Página 2 de 20</span>
+    </footer>
+  </section>
+
+  <section class="pagina pagina--evidencia">
+    <div class="franja"></div>
+    <header class="encabezado">
+      <span class="numero">Evidencia 1</span>
+      <span class="materia">Vue 3 · API REST Countries</span>
+    </header>
+    <h2 class="titulo-evidencia">Publicación en GitHub Pages</h2>
+    <p class="subtitulo-evidencia">Captura del código fuente</p>
+    <figure class="marco-codigo">
+      <img src="capturas/codigo-pages.png" alt="Código fuente de .github/workflows/deploy.yml" />
+    </figure>
+    <div class="explicacion">
+      <h3>Explicación</h3>
+      <p>El workflow de GitHub Actions se ejecuta en cada push a main: instala dependencias con npm ci, compila con Vite y publica la carpeta dist en gh-pages. La opción base de vite.config.js ajusta las rutas de los recursos a /vue-api-restcountries/.</p>
+      <p class="ruta-archivo">Archivo: <code>.github/workflows/deploy.yml</code></p>
+    </div>
+    <footer class="pie-pagina">
+      <span>Explorador de Países · Evidencias de cumplimiento</span>
+      <span>Página 3 de 20</span>
+    </footer>
+  </section>
+
+  <section class="pagina pagina--evidencia">
+    <div class="franja"></div>
+    <header class="encabezado">
+      <span class="numero">Evidencia 2</span>
+      <span class="materia">Vue 3 · API REST Countries</span>
+    </header>
+    <h2 class="titulo-evidencia">Consumo de la API con fetch() dentro de onMounted()</h2>
+    <p class="subtitulo-evidencia">Captura de la interfaz</p>
+    <figure class="marco-navegador">
+      <div class="barra-navegador">
+        <span class="puntos"><i></i><i></i><i></i></span>
+        <span class="url">https://gomezsanchezpaolakasumy-star.github.io/vue-api-restcountries/</span>
+      </div>
+      <img src="capturas/principal.png" alt="Captura de la interfaz: Consumo de la API con fetch() dentro de onMounted()" />
+    </figure>
+    <div class="explicacion">
+      <h3>Explicación</h3>
+      <p>Al abrir la aplicación se ejecuta la primera petición y se muestra el catálogo de países con bandera, nombre, capital, región y población. La interfaz cambia automáticamente según el estado de la petición.</p>
+    </div>
+    <footer class="pie-pagina">
+      <span>Explorador de Países · Evidencias de cumplimiento</span>
+      <span>Página 4 de 20</span>
+    </footer>
+  </section>
+
+  <section class="pagina pagina--evidencia">
+    <div class="franja"></div>
+    <header class="encabezado">
+      <span class="numero">Evidencia 2</span>
+      <span class="materia">Vue 3 · API REST Countries</span>
+    </header>
+    <h2 class="titulo-evidencia">Consumo de la API con fetch() dentro de onMounted()</h2>
+    <p class="subtitulo-evidencia">Captura del código fuente</p>
+    <figure class="marco-codigo">
+      <img src="capturas/codigo-fetch-onmounted.png" alt="Código fuente de src/App.vue" />
+    </figure>
+    <div class="explicacion">
+      <h3>Explicación</h3>
+      <p>onMounted() contiene la primera llamada fetch() a la URL de la API REST Countries v5 indicada en la consigna. La respuesta se convierte a JSON y se normaliza antes de guardarse en la variable reactiva paises. Como la clave demo devuelve un único país y restringe CORS, se complementa con un catálogo oficial de respaldo.</p>
+      <p class="ruta-archivo">Archivo: <code>src/App.vue</code></p>
+    </div>
+    <footer class="pie-pagina">
+      <span>Explorador de Países · Evidencias de cumplimiento</span>
+      <span>Página 5 de 20</span>
+    </footer>
+  </section>
+
+  <section class="pagina pagina--evidencia">
+    <div class="franja"></div>
+    <header class="encabezado">
+      <span class="numero">Evidencia 3</span>
+      <span class="materia">Vue 3 · API REST Countries</span>
+    </header>
+    <h2 class="titulo-evidencia">Datos reactivos con ref()</h2>
+    <p class="subtitulo-evidencia">Captura de la interfaz</p>
+    <figure class="marco-navegador">
+      <div class="barra-navegador">
+        <span class="puntos"><i></i><i></i><i></i></span>
+        <span class="url">https://gomezsanchezpaolakasumy-star.github.io/vue-api-restcountries/?region=Europa</span>
+      </div>
+      <img src="capturas/europa.png" alt="Captura de la interfaz: Datos reactivos con ref()" />
+    </figure>
+    <div class="explicacion">
+      <h3>Explicación</h3>
+      <p>El contador de resultados, las tarjetas y el filtro activo se actualizan sin recargar la página. Al seleccionar Europa, la interfaz muestra únicamente los países de esa región.</p>
+    </div>
+    <footer class="pie-pagina">
+      <span>Explorador de Países · Evidencias de cumplimiento</span>
+      <span>Página 6 de 20</span>
+    </footer>
+  </section>
+
+  <section class="pagina pagina--evidencia">
+    <div class="franja"></div>
+    <header class="encabezado">
+      <span class="numero">Evidencia 3</span>
+      <span class="materia">Vue 3 · API REST Countries</span>
+    </header>
+    <h2 class="titulo-evidencia">Datos reactivos con ref()</h2>
+    <p class="subtitulo-evidencia">Captura del código fuente</p>
+    <figure class="marco-codigo">
+      <img src="capturas/codigo-refs.png" alt="Código fuente de src/App.vue" />
+    </figure>
+    <div class="explicacion">
+      <h3>Explicación</h3>
+      <p>paises, cargando, error, busqueda, regionActiva y ordenSeleccionado se crean con ref(). Cuando la petición termina, se asigna paises.value y se cambia cargando.value; Vue detecta esos cambios y vuelve a renderizar la interfaz.</p>
+      <p class="ruta-archivo">Archivo: <code>src/App.vue</code></p>
+    </div>
+    <footer class="pie-pagina">
+      <span>Explorador de Países · Evidencias de cumplimiento</span>
+      <span>Página 7 de 20</span>
+    </footer>
+  </section>
+
+  <section class="pagina pagina--evidencia">
+    <div class="franja"></div>
+    <header class="encabezado">
+      <span class="numero">Evidencia 4</span>
+      <span class="materia">Vue 3 · API REST Countries</span>
+    </header>
+    <h2 class="titulo-evidencia">Listado dinámico de países con v-for</h2>
+    <p class="subtitulo-evidencia">Captura de la interfaz</p>
+    <figure class="marco-navegador">
+      <div class="barra-navegador">
+        <span class="puntos"><i></i><i></i><i></i></span>
+        <span class="url">https://gomezsanchezpaolakasumy-star.github.io/vue-api-restcountries/?region=Asia</span>
+      </div>
+      <img src="capturas/asia.png" alt="Captura de la interfaz: Listado dinámico de países con v-for" />
+    </figure>
+    <div class="explicacion">
+      <h3>Explicación</h3>
+      <p>La cuadrícula muestra una tarjeta por cada país del arreglo filtrado. Cada tarjeta presenta la bandera, el nombre, la capital, la región y la población, tal como exige la consigna.</p>
+    </div>
+    <footer class="pie-pagina">
+      <span>Explorador de Países · Evidencias de cumplimiento</span>
+      <span>Página 8 de 20</span>
+    </footer>
+  </section>
+
+  <section class="pagina pagina--evidencia">
+    <div class="franja"></div>
+    <header class="encabezado">
+      <span class="numero">Evidencia 4</span>
+      <span class="materia">Vue 3 · API REST Countries</span>
+    </header>
+    <h2 class="titulo-evidencia">Listado dinámico de países con v-for</h2>
+    <p class="subtitulo-evidencia">Captura del código fuente</p>
+    <figure class="marco-codigo">
+      <img src="capturas/codigo-v-for.png" alt="Código fuente de src/App.vue" />
+    </figure>
+    <div class="explicacion">
+      <h3>Explicación</h3>
+      <p>v-for recorre paisesFiltrados para crear una tarjeta PaisCard por país y también recorre regiones para generar los botones de filtro. La directiva :key utiliza el código ISO del país para optimizar el renderizado.</p>
+      <p class="ruta-archivo">Archivo: <code>src/App.vue</code></p>
+    </div>
+    <footer class="pie-pagina">
+      <span>Explorador de Países · Evidencias de cumplimiento</span>
+      <span>Página 9 de 20</span>
+    </footer>
+  </section>
+
+  <section class="pagina pagina--evidencia">
+    <div class="franja"></div>
+    <header class="encabezado">
+      <span class="numero">Evidencia 5</span>
+      <span class="materia">Vue 3 · API REST Countries</span>
+    </header>
+    <h2 class="titulo-evidencia">Estados de la interfaz con v-if e indicador de carga</h2>
+    <p class="subtitulo-evidencia">Captura de la interfaz</p>
+    <figure class="marco-navegador">
+      <div class="barra-navegador">
+        <span class="puntos"><i></i><i></i><i></i></span>
+        <span class="url">https://gomezsanchezpaolakasumy-star.github.io/vue-api-restcountries/</span>
+      </div>
+      <img src="capturas/cargando.png" alt="Captura de la interfaz: Estados de la interfaz con v-if e indicador de carga" />
+    </figure>
+    <div class="explicacion">
+      <h3>Explicación</h3>
+      <p>Mientras se obtienen los datos, v-if muestra un spinner animado y el mensaje «Cargando países...». La captura se realizó al iniciar la aplicación, antes de que finalizaran las peticiones.</p>
+    </div>
+    <footer class="pie-pagina">
+      <span>Explorador de Países · Evidencias de cumplimiento</span>
+      <span>Página 10 de 20</span>
+    </footer>
+  </section>
+
+  <section class="pagina pagina--evidencia">
+    <div class="franja"></div>
+    <header class="encabezado">
+      <span class="numero">Evidencia 5</span>
+      <span class="materia">Vue 3 · API REST Countries</span>
+    </header>
+    <h2 class="titulo-evidencia">Estados de la interfaz con v-if e indicador de carga</h2>
+    <p class="subtitulo-evidencia">Captura del código fuente</p>
+    <figure class="marco-codigo">
+      <img src="capturas/codigo-v-if-carga.png" alt="Código fuente de src/App.vue" />
+    </figure>
+    <div class="explicacion">
+      <h3>Explicación</h3>
+      <p>v-if decide si se muestra el indicador de carga, el error, el mensaje de sin resultados o la lista de tarjetas. v-else completa la lógica para que nunca se muestren dos estados a la vez; el componente EstadoMensaje reutiliza el spinner y los mensajes.</p>
+      <p class="ruta-archivo">Archivo: <code>src/App.vue</code></p>
+    </div>
+    <footer class="pie-pagina">
+      <span>Explorador de Países · Evidencias de cumplimiento</span>
+      <span>Página 11 de 20</span>
+    </footer>
+  </section>
+
+  <section class="pagina pagina--evidencia">
+    <div class="franja"></div>
+    <header class="encabezado">
+      <span class="numero">Evidencia 6</span>
+      <span class="materia">Vue 3 · API REST Countries</span>
+    </header>
+    <h2 class="titulo-evidencia">Mensaje cuando no hay resultados</h2>
+    <p class="subtitulo-evidencia">Captura de la interfaz</p>
+    <figure class="marco-navegador">
+      <div class="barra-navegador">
+        <span class="puntos"><i></i><i></i><i></i></span>
+        <span class="url">https://gomezsanchezpaolakasumy-star.github.io/vue-api-restcountries/?q=zzzz</span>
+      </div>
+      <img src="capturas/vacio.png" alt="Captura de la interfaz: Mensaje cuando no hay resultados" />
+    </figure>
+    <div class="explicacion">
+      <h3>Explicación</h3>
+      <p>Al buscar un texto que no coincide con ningún país se muestra el estado «Sin resultados» con un mensaje explicativo y un botón para restablecer los filtros.</p>
+    </div>
+    <footer class="pie-pagina">
+      <span>Explorador de Países · Evidencias de cumplimiento</span>
+      <span>Página 12 de 20</span>
+    </footer>
+  </section>
+
+  <section class="pagina pagina--evidencia">
+    <div class="franja"></div>
+    <header class="encabezado">
+      <span class="numero">Evidencia 6</span>
+      <span class="materia">Vue 3 · API REST Countries</span>
+    </header>
+    <h2 class="titulo-evidencia">Mensaje cuando no hay resultados</h2>
+    <p class="subtitulo-evidencia">Captura del código fuente</p>
+    <figure class="marco-codigo">
+      <img src="capturas/codigo-sin-resultados.png" alt="Código fuente de src/App.vue" />
+    </figure>
+    <div class="explicacion">
+      <h3>Explicación</h3>
+      <p>El mensaje se construye con la propiedad computada mensajeVacio y se renderiza cuando paisesFiltrados.length === 0. El botón «Ver todos los países» ejecuta limpiarFiltros() y devuelve la búsqueda y la región a su estado inicial.</p>
+      <p class="ruta-archivo">Archivo: <code>src/App.vue</code></p>
+    </div>
+    <footer class="pie-pagina">
+      <span>Explorador de Países · Evidencias de cumplimiento</span>
+      <span>Página 13 de 20</span>
+    </footer>
+  </section>
+
+  <section class="pagina pagina--evidencia">
+    <div class="franja"></div>
+    <header class="encabezado">
+      <span class="numero">Evidencia 7</span>
+      <span class="materia">Vue 3 · API REST Countries</span>
+    </header>
+    <h2 class="titulo-evidencia">Filtro de búsqueda con v-model</h2>
+    <p class="subtitulo-evidencia">Captura de la interfaz</p>
+    <figure class="marco-navegador">
+      <div class="barra-navegador">
+        <span class="puntos"><i></i><i></i><i></i></span>
+        <span class="url">https://gomezsanchezpaolakasumy-star.github.io/vue-api-restcountries/?q=canada</span>
+      </div>
+      <img src="capturas/filtrado.png" alt="Captura de la interfaz: Filtro de búsqueda con v-model" />
+    </figure>
+    <div class="explicacion">
+      <h3>Explicación</h3>
+      <p>El campo de búsqueda filtra los países en tiempo real: al escribir «canada» se muestra Canadá y el contador indica 1 de 250 resultados. El selector de ordenamiento también está enlazado con v-model.</p>
+    </div>
+    <footer class="pie-pagina">
+      <span>Explorador de Países · Evidencias de cumplimiento</span>
+      <span>Página 14 de 20</span>
+    </footer>
+  </section>
+
+  <section class="pagina pagina--evidencia">
+    <div class="franja"></div>
+    <header class="encabezado">
+      <span class="numero">Evidencia 7</span>
+      <span class="materia">Vue 3 · API REST Countries</span>
+    </header>
+    <h2 class="titulo-evidencia">Filtro de búsqueda con v-model</h2>
+    <p class="subtitulo-evidencia">Captura del código fuente</p>
+    <figure class="marco-codigo">
+      <img src="capturas/codigo-v-model.png" alt="Código fuente de src/App.vue" />
+    </figure>
+    <div class="explicacion">
+      <h3>Explicación</h3>
+      <p>v-model crea un enlace bidireccional entre el input y la variable busqueda, y entre el select y ordenSeleccionado. El arreglo paisesFiltrados se recalcula con computed(), compara sin distinguir tildes ni mayúsculas y actualiza la URL para compartir la búsqueda.</p>
+      <p class="ruta-archivo">Archivo: <code>src/App.vue</code></p>
+    </div>
+    <footer class="pie-pagina">
+      <span>Explorador de Países · Evidencias de cumplimiento</span>
+      <span>Página 15 de 20</span>
+    </footer>
+  </section>
+
+  <section class="pagina pagina--evidencia">
+    <div class="franja"></div>
+    <header class="encabezado">
+      <span class="numero">Evidencia 8</span>
+      <span class="materia">Vue 3 · API REST Countries</span>
+    </header>
+    <h2 class="titulo-evidencia">Atributos dinámicos con v-bind</h2>
+    <p class="subtitulo-evidencia">Captura de la interfaz</p>
+    <figure class="marco-navegador">
+      <div class="barra-navegador">
+        <span class="puntos"><i></i><i></i><i></i></span>
+        <span class="url">https://gomezsanchezpaolakasumy-star.github.io/vue-api-restcountries/?region=Am%C3%A9rica</span>
+      </div>
+      <img src="capturas/america.png" alt="Captura de la interfaz: Atributos dinámicos con v-bind" />
+    </figure>
+    <div class="explicacion">
+      <h3>Explicación</h3>
+      <p>Cada tarjeta carga su bandera desde la URL correspondiente al país y muestra la información enlazada dinámicamente. La región activa también se resalta con una clase calculada.</p>
+    </div>
+    <footer class="pie-pagina">
+      <span>Explorador de Países · Evidencias de cumplimiento</span>
+      <span>Página 16 de 20</span>
+    </footer>
+  </section>
+
+  <section class="pagina pagina--evidencia">
+    <div class="franja"></div>
+    <header class="encabezado">
+      <span class="numero">Evidencia 8</span>
+      <span class="materia">Vue 3 · API REST Countries</span>
+    </header>
+    <h2 class="titulo-evidencia">Atributos dinámicos con v-bind</h2>
+    <p class="subtitulo-evidencia">Captura del código fuente</p>
+    <figure class="marco-codigo">
+      <img src="capturas/codigo-v-bind.png" alt="Código fuente de src/components/PaisCard.vue · src/App.vue" />
+    </figure>
+    <div class="explicacion">
+      <h3>Explicación</h3>
+      <p>v-bind, abreviado con dos puntos (:), enlaza atributos HTML con datos de la aplicación. PaisCard usa :src, :alt y :title para la bandera; los botones de región usan :class y :aria-pressed para reflejar el filtro activo.</p>
+      <p class="ruta-archivo">Archivo: <code>src/components/PaisCard.vue · src/App.vue</code></p>
+    </div>
+    <footer class="pie-pagina">
+      <span>Explorador de Países · Evidencias de cumplimiento</span>
+      <span>Página 17 de 20</span>
+    </footer>
+  </section>
+
+  <section class="pagina pagina--evidencia">
+    <div class="franja"></div>
+    <header class="encabezado">
+      <span class="numero">Evidencia 9</span>
+      <span class="materia">Vue 3 · API REST Countries</span>
+    </header>
+    <h2 class="titulo-evidencia">Manejo de errores con try / catch</h2>
+    <p class="subtitulo-evidencia">Captura de la interfaz</p>
+    <figure class="marco-navegador">
+      <div class="barra-navegador">
+        <span class="puntos"><i></i><i></i><i></i></span>
+        <span class="url">https://gomezsanchezpaolakasumy-star.github.io/vue-api-restcountries/</span>
+      </div>
+      <img src="capturas/error.png" alt="Captura de la interfaz: Manejo de errores con try / catch" />
+    </figure>
+    <div class="explicacion">
+      <h3>Explicación</h3>
+      <p>Si la API y el catálogo de respaldo no están disponibles, la aplicación muestra un mensaje claro y un botón «Reintentar» en lugar de una pantalla vacía.</p>
+    </div>
+    <footer class="pie-pagina">
+      <span>Explorador de Países · Evidencias de cumplimiento</span>
+      <span>Página 18 de 20</span>
+    </footer>
+  </section>
+
+  <section class="pagina pagina--evidencia">
+    <div class="franja"></div>
+    <header class="encabezado">
+      <span class="numero">Evidencia 9</span>
+      <span class="materia">Vue 3 · API REST Countries</span>
+    </header>
+    <h2 class="titulo-evidencia">Manejo de errores con try / catch</h2>
+    <p class="subtitulo-evidencia">Captura del código fuente</p>
+    <figure class="marco-codigo">
+      <img src="capturas/codigo-errores.png" alt="Código fuente de src/App.vue" />
+    </figure>
+    <div class="explicacion">
+      <h3>Explicación</h3>
+      <p>Las dos peticiones fetch() están protegidas con try/catch. Si la API falla se intenta el catálogo local; si ambas fallan, se asigna error.value y se muestra el estado de error. El bloque finally desactiva el indicador de carga en todos los casos.</p>
+      <p class="ruta-archivo">Archivo: <code>src/App.vue</code></p>
+    </div>
+    <footer class="pie-pagina">
+      <span>Explorador de Países · Evidencias de cumplimiento</span>
+      <span>Página 19 de 20</span>
+    </footer>
+  </section>
+
+  <section class="pagina pagina--checklist">
+    <div class="franja"></div>
+    <header class="encabezado">
+      <span class="numero">Cierre</span>
+      <span class="materia">Vue 3 · API REST Countries</span>
+    </header>
+    <h2 class="titulo-evidencia">Lista de verificación y enlaces de entrega</h2>
+    <p class="subtitulo-evidencia">Resumen de cumplimiento</p>
+
+    <ul class="checklist">
+      <li><span class="check">✓</span>Dirección del repositorio en GitHub con el código fuente Vue.</li><li><span class="check">✓</span>Dirección del sitio publicado en GitHub Pages.</li><li><span class="check">✓</span>Uso de fetch() para consumir la API REST Countries.</li><li><span class="check">✓</span>Uso de onMounted() para ejecutar la primera petición.</li><li><span class="check">✓</span>Datos guardados en variables reactivas con ref().</li><li><span class="check">✓</span>Uso de v-for para mostrar la lista de países.</li><li><span class="check">✓</span>Uso de v-if para mostrar los estados de la aplicación.</li><li><span class="check">✓</span>Uso de v-model para filtrar la información.</li><li><span class="check">✓</span>Uso de v-bind para atributos dinámicos.</li><li><span class="check">✓</span>Indicador de carga mientras se obtienen los datos.</li><li><span class="check">✓</span>Manejo de errores con try / catch.</li><li><span class="check">✓</span>Documento PDF de evidencias de cumplimiento.</li>
+    </ul>
+
+    <div class="entrega">
+      <h3>Enlaces de entrega</h3>
+      <p><span>Repositorio</span><a href="https://github.com/gomezsanchezpaolakasumy-star/vue-api-restcountries">https://github.com/gomezsanchezpaolakasumy-star/vue-api-restcountries</a></p>
+      <p><span>Sitio publicado</span><a href="https://gomezsanchezpaolakasumy-star.github.io/vue-api-restcountries/">https://gomezsanchezpaolakasumy-star.github.io/vue-api-restcountries/</a></p>
+      <p><span>PDF</span><strong>docs/Evidencias-Cumplimiento.pdf</strong></p>
+    </div>
+
+    <div class="nota">
+      <h3>Nota sobre la API</h3>
+      <p>La clave pública <code>rc_live_demo</code> devuelve un único país de muestra y rechaza peticiones desde orígenes no autorizados. Por eso la aplicación intenta primero la API oficial y, si no está disponible, muestra un catálogo de respaldo generado desde el dataset oficial de REST Countries. El código de la petición con fetch() y onMounted() se conserva y se documenta en este PDF.</p>
+    </div>
+
+    <footer class="pie-pagina">
+      <span>Explorador de Países · Evidencias de cumplimiento</span>
+      <span>Página 20 de 20</span>
+    </footer>
+  </section>
+</body>
+</html>
