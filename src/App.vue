@@ -1,212 +1,351 @@
 <script setup>
 // @ts-nocheck
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import PaisCard from './components/PaisCard.vue'
+import EstadoMensaje from './components/EstadoMensaje.vue'
+import {
+  REGIONES_ORDEN,
+  normalizarPaisAPI,
+  combinarPaises,
+  normalizarTexto,
+} from './utils/paises'
+
+/* Endpoint solicitado en la consigna. La primera petición se hace con fetch()
+   dentro de onMounted(). */
+const API_URL =
+  'https://api.restcountries.com/countries/v5?q=Canada&api-key=rc_live_demo&pretty=1'
+
+/* Catálogo oficial de respaldo. Se genera desde el dataset de REST Countries
+   con `npm run datos` y se sirve como archivo estático. */
+const CATALOGO_URL = `${import.meta.env.BASE_URL}data/paises.json`
 
 // Variables reactivas con ref()
+const parametrosURL = new URLSearchParams(window.location.search)
 const paises = ref([])
 const cargando = ref(true)
-const error = ref(null)
-const busqueda = ref('')
-const regionSeleccionada = ref('')
-const ordenSeleccionado = ref('nombre')
+const error = ref('')
+const aviso = ref('')
+const avisoCerrado = ref(false)
+const busqueda = ref(parametrosURL.get('q') || '')
+const regionActiva = ref(parametrosURL.get('region') || 'Todas')
+const ordenSeleccionado = ref(parametrosURL.get('orden') || 'nombre')
 
-const regiones = ['Todas', 'Americas', 'Europe', 'Asia', 'Africa', 'Oceania']
-
-// Datos de respaldo en caso de que la API falle
-const paisesRespaldo = [
-  { nombre: "México", capital: "Ciudad de México", region: "Americas", poblacion: 128455567, bandera: "https://flagcdn.com/w320/mx.png", codigo: "MEX" },
-  { nombre: "Canadá", capital: "Ottawa", region: "Americas", poblacion: 38246108, bandera: "https://flagcdn.com/w320/ca.png", codigo: "CAN" },
-  { nombre: "España", capital: "Madrid", region: "Europe", poblacion: 47351567, bandera: "https://flagcdn.com/w320/es.png", codigo: "ESP" },
-  { nombre: "Japón", capital: "Tokio", region: "Asia", poblacion: 125584838, bandera: "https://flagcdn.com/w320/jp.png", codigo: "JPN" },
-  { nombre: "Argentina", capital: "Buenos Aires", region: "Americas", poblacion: 45376763, bandera: "https://flagcdn.com/w320/ar.png", codigo: "ARG" },
-  { nombre: "Francia", capital: "París", region: "Europe", poblacion: 67391582, bandera: "https://flagcdn.com/w320/fr.png", codigo: "FRA" },
-  { nombre: "Brasil", capital: "Brasilia", region: "Americas", poblacion: 212559409, bandera: "https://flagcdn.com/w320/br.png", codigo: "BRA" },
-  { nombre: "Alemania", capital: "Berlín", region: "Europe", poblacion: 83240525, bandera: "https://flagcdn.com/w320/de.png", codigo: "DEU" },
-  { nombre: "Australia", capital: "Canberra", region: "Oceania", poblacion: 25688079, bandera: "https://flagcdn.com/w320/au.png", codigo: "AUS" },
-  { nombre: "Colombia", capital: "Bogotá", region: "Americas", poblacion: 50882884, bandera: "https://flagcdn.com/w320/co.png", codigo: "COL" },
-  { nombre: "Italia", capital: "Roma", region: "Europe", poblacion: 59554023, bandera: "https://flagcdn.com/w320/it.png", codigo: "ITA" },
-  { nombre: "Corea del Sur", capital: "Seúl", region: "Asia", poblacion: 51780579, bandera: "https://flagcdn.com/w320/kr.png", codigo: "KOR" },
-  { nombre: "Perú", capital: "Lima", region: "Americas", poblacion: 33359418, bandera: "https://flagcdn.com/w320/pe.png", codigo: "PER" },
-  { nombre: "Chile", capital: "Santiago", region: "Americas", poblacion: 19458310, bandera: "https://flagcdn.com/w320/cl.png", codigo: "CHL" },
-  { nombre: "Estados Unidos", capital: "Washington D.C.", region: "Americas", poblacion: 331893745, bandera: "https://flagcdn.com/w320/us.png", codigo: "USA" },
-  { nombre: "Reino Unido", capital: "Londres", region: "Europe", poblacion: 67886011, bandera: "https://flagcdn.com/w320/gb.png", codigo: "GBR" },
-  { nombre: "China", capital: "Pekín", region: "Asia", poblacion: 1402112000, bandera: "https://flagcdn.com/w320/cn.png", codigo: "CHN" },
-  { nombre: "India", capital: "Nueva Delhi", region: "Asia", poblacion: 1380004385, bandera: "https://flagcdn.com/w320/in.png", codigo: "IND" },
-  { nombre: "Egipto", capital: "El Cairo", region: "Africa", poblacion: 102334404, bandera: "https://flagcdn.com/w320/eg.png", codigo: "EGY" },
-  { nombre: "Nigeria", capital: "Abuya", region: "Africa", poblacion: 206139589, bandera: "https://flagcdn.com/w320/ng.png", codigo: "NGA" },
-  { nombre: "Sudáfrica", capital: "Pretoria", region: "Africa", poblacion: 59308690, bandera: "https://flagcdn.com/w320/za.png", codigo: "ZAF" },
-  { nombre: "Nueva Zelanda", capital: "Wellington", region: "Oceania", poblacion: 5084300, bandera: "https://flagcdn.com/w320/nz.png", codigo: "NZL" },
-  { nombre: "Rusia", capital: "Moscú", region: "Europe", poblacion: 145912025, bandera: "https://flagcdn.com/w320/ru.png", codigo: "RUS" },
-  { nombre: "Portugal", capital: "Lisboa", region: "Europe", poblacion: 10196709, bandera: "https://flagcdn.com/w320/pt.png", codigo: "PRT" }
-]
-
-/**
- * Función para normalizar los datos de la API v5 al formato interno.
- * La API v5 usa una estructura diferente a la v3.1:
- *   - names.common  → nombre
- *   - capitals[0].name → capital
- *   - region → region
- *   - population → poblacion
- *   - flag.url_png / flag.url_svg → bandera
- *   - codes.alpha_3 → codigo
- */
-function normalizarPais(pais) {
-  return {
-    nombre: pais.names?.common || pais.nombre || 'Desconocido',
-    capital: pais.capitals?.[0]?.name || pais.capital || 'N/A',
-    region: pais.region || 'Desconocida',
-    poblacion: pais.population || pais.poblacion || 0,
-    bandera: pais.flag?.url_png || pais.flag?.url_svg || pais.bandera || '',
-    codigo: pais.codes?.alpha_3 || pais.codigo || pais.nombres?.common || ''
-  }
-}
-
-// Petición con fetch() dentro de onMounted()
+// Primera llamada a la API dentro de onMounted()
 onMounted(async () => {
+  let paisesAPI = []
+  let apiRespondio = false
+
   try {
-    // Consumo de la API REST Countries v5 con fetch()
-    const res = await fetch('https://api.restcountries.com/countries/v5?api-key=rc_live_demo&pretty=1')
-    if (!res.ok) throw new Error('Error en la red')
-    const json = await res.json()
+    // Petición asíncrona con fetch() a la API REST Countries v5
+    const respuesta = await fetch(API_URL)
+    if (!respuesta.ok) {
+      throw new Error(`La API respondió con estado ${respuesta.status}`)
+    }
 
-    // La API v5 devuelve los datos dentro de data.objects
-    const datos = json.data?.objects || []
+    const json = await respuesta.json()
+    const lista = (json.data?.objects || []).map(normalizarPaisAPI)
 
-    if (datos.length > 0) {
-      // Normalizar datos de la API v5 al formato interno
-      const paisesAPI = datos.map(normalizarPais)
-      // Combinar con datos de respaldo para tener más países
-      const codigosAPI = new Set(paisesAPI.map(p => p.codigo))
-      const respaldoExtra = paisesRespaldo.filter(p => !codigosAPI.has(p.codigo))
-      paises.value = [...paisesAPI, ...respaldoExtra]
-    } else {
-      throw new Error('La API no devolvió datos')
+    if (lista.length === 0) {
+      throw new Error('La API no devolvió países')
+    }
+
+    paisesAPI = lista
+    apiRespondio = true
+  } catch (err) {
+    console.warn('No se pudo consultar la API REST Countries v5:', err)
+  }
+
+  try {
+    // Catálogo de respaldo: también se obtiene con fetch()
+    const respuesta = await fetch(CATALOGO_URL)
+    if (!respuesta.ok) {
+      throw new Error(`No se pudo cargar el catálogo (${respuesta.status})`)
+    }
+
+    const catalogo = await respuesta.json()
+    paises.value = combinarPaises(paisesAPI, catalogo)
+
+    if (!apiRespondio) {
+      aviso.value =
+        'La API v5 en modo demo restringe las peticiones desde el navegador. Se muestra el catálogo oficial de respaldo de REST Countries.'
+    } else if (paisesAPI.length <= 1) {
+      aviso.value =
+        'La clave demo de la API v5 devuelve un país de muestra. El catálogo completo proviene del respaldo oficial de REST Countries.'
     }
   } catch (err) {
-    // Manejo de errores con try/catch
-    error.value = 'No fue posible obtener los datos de la API. Mostrando datos de respaldo.'
-    paises.value = paisesRespaldo
+    console.error('No se pudo cargar el catálogo de respaldo:', err)
+
+    if (paisesAPI.length > 0) {
+      paises.value = paisesAPI
+      aviso.value =
+        'Solo se pudieron mostrar los datos de la API. El catálogo local no está disponible.'
+    } else {
+      error.value =
+        'No fue posible obtener los datos de la API ni del catálogo de respaldo. Revisa tu conexión e inténtalo de nuevo.'
+    }
   } finally {
     cargando.value = false
   }
 })
 
-// Filtrado avanzado combinado con computed (usa v-model y botones de región)
-const paisesFiltrados = computed(() => {
-  let resultado = paises.value.filter(pais => {
-    const nombre = pais.nombre?.toLowerCase() || ''
-    const region = pais.region?.toLowerCase() || ''
-    const filtro = busqueda.value.toLowerCase()
+// Mantiene los filtros en la URL para poder compartir una búsqueda
+watch([busqueda, regionActiva, ordenSeleccionado], ([texto, region, orden]) => {
+  const params = new URLSearchParams()
+  if (texto) params.set('q', texto)
+  if (region !== 'Todas') params.set('region', region)
+  if (orden !== 'nombre') params.set('orden', orden)
 
-    // El filtro busca por nombre del país o por región
-    const coincideBusqueda = nombre.includes(filtro) || region.includes(filtro)
-    const coincideRegion = !regionSeleccionada.value || 
-      regionSeleccionada.value === 'Todas' || 
-      pais.region?.toLowerCase() === regionSeleccionada.value.toLowerCase()
-
-    return coincideBusqueda && coincideRegion
-  })
-
-  // Ordenamiento dinámico
-  return resultado.sort((a, b) => {
-    if (ordenSeleccionado.value === 'nombre') {
-      return (a.nombre || '').localeCompare(b.nombre || '')
-    } else if (ordenSeleccionado.value === 'poblacion-desc') {
-      return (b.poblacion || 0) - (a.poblacion || 0)
-    } else if (ordenSeleccionado.value === 'poblacion-asc') {
-      return (a.poblacion || 0) - (b.poblacion || 0)
-    }
-    return 0
-  })
+  const query = params.toString()
+  window.history.replaceState(null, '', query ? `?${query}` : window.location.pathname)
 })
 
-const seleccionarRegion = (reg) => {
-  regionSeleccionada.value = reg === 'Todas' ? '' : reg
+// Regiones disponibles con su cantidad de países (v-for)
+const regiones = computed(() => {
+  const conteos = new Map()
+
+  for (const pais of paises.value) {
+    conteos.set(pais.region, (conteos.get(pais.region) || 0) + 1)
+  }
+
+  return REGIONES_ORDEN.filter(
+    (region) => region === 'Todas' || conteos.has(region),
+  ).map((region) => ({
+    nombre: region,
+    total: region === 'Todas' ? paises.value.length : conteos.get(region),
+  }))
+})
+
+// Filtro por nombre, capital o región + ordenamiento
+const paisesFiltrados = computed(() => {
+  const termino = normalizarTexto(busqueda.value)
+  const region = regionActiva.value
+
+  return paises.value
+    .filter((pais) => {
+      const coincideRegion = region === 'Todas' || pais.region === region
+      if (!coincideRegion) return false
+      if (!termino) return true
+
+      return [
+        pais.nombre,
+        pais.nombreIngles,
+        pais.nombreOficial,
+        pais.capital,
+        pais.region,
+      ].some((valor) => normalizarTexto(valor).includes(termino))
+    })
+    .sort((a, b) => {
+      if (ordenSeleccionado.value === 'poblacion-desc') {
+        return (b.poblacion ?? -1) - (a.poblacion ?? -1)
+      }
+      if (ordenSeleccionado.value === 'poblacion-asc') {
+        return (a.poblacion ?? Number.MAX_SAFE_INTEGER) -
+          (b.poblacion ?? Number.MAX_SAFE_INTEGER)
+      }
+      return a.nombre.localeCompare(b.nombre, 'es')
+    })
+})
+
+const mensajeVacio = computed(() => {
+  if (busqueda.value && regionActiva.value !== 'Todas') {
+    return `No hay países que coincidan con “${busqueda.value}” en ${regionActiva.value}.`
+  }
+  if (busqueda.value) {
+    return `No se encontraron países para “${busqueda.value}”. Prueba con otro nombre.`
+  }
+  return `No hay países registrados en ${regionActiva.value}.`
+})
+
+function seleccionarRegion(region) {
+  regionActiva.value = region
+}
+
+function limpiarBusqueda() {
+  busqueda.value = ''
+}
+
+function limpiarFiltros() {
+  busqueda.value = ''
+  regionActiva.value = 'Todas'
+}
+
+function recargar() {
+  window.location.reload()
 }
 </script>
 
 <template>
-  <div class="contenedor">
-    <!-- 🟢 Título del proyecto -->
-    <h1>🌍 Explorador de Países</h1>
-
-    <!-- Controles: Búsqueda con v-model, Filtros de Región y Ordenamiento -->
-    <div class="controles">
-      <div class="buscador-y-orden">
-        <!-- ⚙️ v-model para filtrar países por nombre o región -->
-        <input 
-          type="text" 
-          v-model="busqueda" 
-          placeholder="🔎 Buscar por nombre de país o región..."
-        />
-        
-        <!-- v-model en select para ordenamiento -->
-        <select v-model="ordenSeleccionado" class="select-orden">
-          <option value="nombre">Ordenar por Nombre (A-Z)</option>
-          <option value="poblacion-desc">Mayor Población</option>
-          <option value="poblacion-asc">Menor Población</option>
-        </select>
-      </div>
-
-      <!-- 🧩 v-for en botones de filtro rápido por región -->
-      <div class="filtros-region">
-        <button 
-          v-for="reg in regiones" 
-          :key="reg" 
-          :class="['btn-region', { activo: (regionSeleccionada === reg) || (!regionSeleccionada && reg === 'Todas') }]"
-          @click="seleccionarRegion(reg)"
-        >
-          {{ reg }}
-        </button>
-      </div>
-
-      <!-- 📊 Contador dinámico de resultados con v-if -->
-      <p class="contador-resultados" v-if="!cargando">
-        Mostrando <strong>{{ paisesFiltrados.length }}</strong> países
+  <header class="cabecera">
+    <div class="cabecera__contenido">
+      <p class="eyebrow">Vue 3 · Consumo de API REST</p>
+      <h1>🌍 Explorador de Países</h1>
+      <p class="subtitulo">
+        Consulta banderas, capitales, regiones y población de países de todo el
+        mundo.
       </p>
+
+      <ul class="estadisticas" aria-label="Resumen del catálogo">
+        <li><strong>{{ paises.length || '—' }}</strong> países</li>
+        <li><strong>6</strong> regiones</li>
+        <li><strong>Vue 3</strong> + fetch()</li>
+      </ul>
     </div>
+  </header>
 
-    <!-- ⏳ Indicador de carga con v-if -->
-    <div v-if="cargando" class="estado">
-      <div class="spinner"></div>
-      <p>⏳ Cargando países...</p>
-    </div>
+  <main class="contenedor" :aria-busy="cargando">
+    <section class="panel-controles" aria-label="Buscador y filtros">
+      <div class="fila-controles">
+        <div class="buscador">
+          <label for="busqueda" class="sr-only">Buscar país</label>
+          <span class="buscador__icono" aria-hidden="true">🔎</span>
 
-    <!-- Contenido principal (solo cuando ya no está cargando) -->
-    <template v-else>
-      <!-- 🚨 Mensaje de error con v-if (try/catch) -->
-      <div v-if="error" class="estado error">
-        <p>⚠️ {{ error }}</p>
-      </div>
+          <!-- v-model: enlace bidireccional del campo de búsqueda -->
+          <input
+            id="busqueda"
+            v-model="busqueda"
+            type="search"
+            placeholder="Buscar por nombre, capital o región..."
+            autocomplete="off"
+          />
 
-      <!-- 🔍 Mensaje si no hay resultados con v-if -->
-      <div v-if="paisesFiltrados.length === 0" class="estado">
-        <p>🔍 No se encontraron resultados para "{{ busqueda }}".</p>
-      </div>
+          <button
+            v-if="busqueda"
+            type="button"
+            class="buscador__limpiar"
+            aria-label="Limpiar búsqueda"
+            @click="limpiarBusqueda"
+          >
+            ✕
+          </button>
+        </div>
 
-      <!-- 🌍 Lista/tarjetas de países con v-for -->
-      <div v-else class="tarjetas-grid">
-        <div 
-          v-for="pais in paisesFiltrados" 
-          :key="pais.codigo" 
-          class="tarjeta"
-        >
-          <div class="bandera-container">
-            <!-- v-bind (:src y :alt) para enlace dinámico de atributos -->
-            <img :src="pais.bandera" :alt="'Bandera de ' + pais.nombre" />
-          </div>
-          <div class="tarjeta-info">
-            <h2>{{ pais.nombre }}</h2>
-            <p><strong>Capital:</strong> {{ pais.capital }}</p>
-            <p><strong>Región:</strong> {{ pais.region }}</p>
-            <p><strong>Población:</strong> {{ pais.poblacion?.toLocaleString() }}</p>
-          </div>
+        <div class="selector-orden">
+          <label for="orden">Ordenar por</label>
+          <!-- v-model en un select -->
+          <select id="orden" v-model="ordenSeleccionado">
+            <option value="nombre">Nombre (A-Z)</option>
+            <option value="poblacion-desc">Mayor población</option>
+            <option value="poblacion-asc">Menor población</option>
+          </select>
         </div>
       </div>
-    </template>
-  </div>
-</template>
 
-<style>
-@import './assets/style.css';
-</style>
+      <!-- v-for: botones de filtro por región -->
+      <div class="filtros-region" role="group" aria-label="Filtrar por región">
+        <button
+          v-for="region in regiones"
+          :key="region.nombre"
+          type="button"
+          class="btn-region"
+          :class="{ activo: regionActiva === region.nombre }"
+          :aria-pressed="regionActiva === region.nombre"
+          @click="seleccionarRegion(region.nombre)"
+        >
+          {{ region.nombre }}
+          <span class="btn-region__total">{{ region.total }}</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- v-if: aviso no bloqueante sobre la fuente de los datos -->
+    <div v-if="aviso && !avisoCerrado" class="aviso" role="status">
+      <span>ℹ️ {{ aviso }}</span>
+      <button
+        type="button"
+        class="aviso__cerrar"
+        aria-label="Cerrar aviso"
+        @click="avisoCerrado = true"
+      >
+        ✕
+      </button>
+    </div>
+
+    <!-- v-if: indicador de carga -->
+    <EstadoMensaje
+      v-if="cargando"
+      tipo="cargando"
+      titulo="Cargando países..."
+      mensaje="Consultando la API REST Countries..."
+    />
+
+    <template v-else>
+      <!-- v-if: error con opción de reintentar (try/catch) -->
+      <EstadoMensaje
+        v-if="error"
+        tipo="error"
+        titulo="No fue posible obtener los datos de la API"
+        :mensaje="error"
+      >
+        <button type="button" class="btn-primario" @click="recargar">
+          Reintentar
+        </button>
+      </EstadoMensaje>
+
+      <template v-else>
+        <div class="barra-resultados">
+          <p class="contador-resultados" aria-live="polite">
+            Mostrando <strong>{{ paisesFiltrados.length }}</strong> de
+            {{ paises.length }} países
+            <span v-if="busqueda">para “{{ busqueda }}”</span>
+            <span v-if="regionActiva !== 'Todas'">en {{ regionActiva }}</span>
+          </p>
+
+          <button
+            v-if="busqueda || regionActiva !== 'Todas'"
+            type="button"
+            class="btn-limpiar-filtros"
+            @click="limpiarFiltros"
+          >
+            Limpiar filtros
+          </button>
+        </div>
+
+        <!-- v-if: mensaje cuando no hay resultados -->
+        <EstadoMensaje
+          v-if="paisesFiltrados.length === 0"
+          tipo="vacio"
+          titulo="Sin resultados"
+          :mensaje="mensajeVacio"
+        >
+          <button type="button" class="btn-primario" @click="limpiarFiltros">
+            Ver todos los países
+          </button>
+        </EstadoMensaje>
+
+        <!-- v-for: tarjetas de países -->
+        <div v-else class="tarjetas-grid">
+          <PaisCard
+            v-for="pais in paisesFiltrados"
+            :key="pais.codigo"
+            :pais="pais"
+          />
+        </div>
+      </template>
+    </template>
+  </main>
+
+  <footer class="pie">
+    <p>
+      Proyecto académico de
+      <strong>Vue 3</strong> que consume la
+      <a
+        href="https://restcountries.com/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >API REST Countries</a>.
+    </p>
+    <p class="pie__enlaces">
+      <a
+        href="https://github.com/gomezsanchezpaolakasumy-star/vue-api-restcountries"
+        target="_blank"
+        rel="noopener noreferrer"
+      >Repositorio en GitHub</a>
+      <span aria-hidden="true">·</span>
+      <a
+        href="https://gomezsanchezpaolakasumy-star.github.io/vue-api-restcountries/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >Sitio en GitHub Pages</a>
+    </p>
+  </footer>
+</template>
