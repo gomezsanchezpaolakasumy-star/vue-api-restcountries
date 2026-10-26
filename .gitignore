@@ -15,8 +15,7 @@ coverage
 *.local
 
 # Editor directories and files
-.vscode/*
-!.vscode/extensions.json
+.vscode/
 .idea
 *.suo
 *.ntvs*
@@ -38,5 +37,5 @@ __screenshots__/
 # Vite
 *.timestamp-*-*.mjs
 
-# Evidencias: archivos temporales del generador
-docs/evidencias/codigo/
+# Evidencias: se conservan en local, pero no se versionan
+docs/

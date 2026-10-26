@@ -13,7 +13,7 @@ error.
 | --- | --- |
 | 📦 Repositorio (código fuente) | [github.com/gomezsanchezpaolakasumy-star/vue-api-restcountries](https://github.com/gomezsanchezpaolakasumy-star/vue-api-restcountries) |
 | 🌐 Sitio publicado en GitHub Pages | [gomezsanchezpaolakasumy-star.github.io/vue-api-restcountries](https://gomezsanchezpaolakasumy-star.github.io/vue-api-restcountries/) |
-| 📄 PDF de evidencias | [`docs/Evidencias-Cumplimiento.pdf`](docs/Evidencias-Cumplimiento.pdf) |
+| 📄 PDF de evidencias | Se entrega por separado junto con el proyecto |
 
 ## ✨ Características
 
@@ -95,7 +95,6 @@ resto de estructuras solicitadas sin depender de una clave privada.
 ```text
 vue-api-restcountries/
 ├─ .github/workflows/deploy.yml   # Despliegue automático a GitHub Pages
-├─ docs/                          # Evidencias y PDF de cumplimiento
 ├─ public/
 │  ├─ data/paises.json            # Catálogo de respaldo (250 países)
 │  └─ favicon.ico
@@ -172,7 +171,7 @@ GitHub Pages.
 - [x] Uso de `v-bind` para banderas y atributos dinámicos.
 - [x] Indicador de carga con spinner y mensaje.
 - [x] Manejo de errores con `try / catch`.
-- [x] PDF de evidencias de cumplimiento.
+- [x] PDF de evidencias generado para la entrega (se entrega por separado).
 
 ## 👩‍💻 Autoría
 
