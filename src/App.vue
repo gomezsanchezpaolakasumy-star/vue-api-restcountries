@@ -2,6 +2,7 @@
 // @ts-nocheck
 import { ref, computed, onMounted } from 'vue'
 
+// Variables reactivas con ref()
 const paises = ref([])
 const cargando = ref(true)
 const error = ref(null)
@@ -11,6 +12,7 @@ const ordenSeleccionado = ref('nombre')
 
 const regiones = ['Todas', 'Americas', 'Europe', 'Asia', 'Africa', 'Oceania']
 
+// Datos de respaldo en caso de que la API falle
 const paisesRespaldo = [
   { name: { common: "México" }, capital: ["Ciudad de México"], region: "Americas", population: 128455567, flags: { svg: "https://flagcdn.com/mx.svg", png: "https://flagcdn.com/w320/mx.png" }, cca3: "MEX" },
   { name: { common: "Canadá" }, capital: ["Ottawa"], region: "Americas", population: 38246108, flags: { svg: "https://flagcdn.com/ca.svg", png: "https://flagcdn.com/w320/ca.png" }, cca3: "CAN" },
@@ -26,6 +28,7 @@ const paisesRespaldo = [
   { name: { common: "Corea del Sur" }, capital: ["Seúl"], region: "Asia", population: 51780579, flags: { svg: "https://flagcdn.com/kr.svg", png: "https://flagcdn.com/w320/kr.png" }, cca3: "KOR" }
 ]
 
+// Petición con fetch() dentro de onMounted()
 onMounted(async () => {
   try {
     const res = await fetch('https://restcountries.com/v3.1/all')
@@ -33,13 +36,14 @@ onMounted(async () => {
     const data = await res.json()
     paises.value = data
   } catch (err) {
+    error.value = 'No fue posible obtener los datos de la API. Mostrando datos de respaldo.'
     paises.value = paisesRespaldo
   } finally {
     cargando.value = false
   }
 })
 
-// Filtrado avanzado combinado (v-model y botones de región)
+// Filtrado avanzado combinado con computed (usa v-model y botones de región)
 const paisesFiltrados = computed(() => {
   let resultado = paises.value.filter(pais => {
     const nombre = pais.name?.common?.toLowerCase() || ''
@@ -74,17 +78,20 @@ const seleccionarRegion = (reg) => {
 
 <template>
   <div class="contenedor">
-    <h1>Explorador de Países</h1>
+    <!-- 🟢 Título del proyecto -->
+    <h1>🌍 Explorador de Países</h1>
 
-    <!-- Controles avanzados: Búsqueda, Filtros de Región y Ordenamiento -->
+    <!-- Controles: Búsqueda con v-model, Filtros de Región y Ordenamiento -->
     <div class="controles">
       <div class="buscador-y-orden">
+        <!-- ⚙️ v-model para filtrar países por nombre o región -->
         <input 
           type="text" 
           v-model="busqueda" 
           placeholder="🔎 Buscar por nombre de país o región..."
         />
         
+        <!-- v-model en select para ordenamiento -->
         <select v-model="ordenSeleccionado" class="select-orden">
           <option value="nombre">Ordenar por Nombre (A-Z)</option>
           <option value="poblacion-desc">Mayor Población</option>
@@ -92,10 +99,10 @@ const seleccionarRegion = (reg) => {
         </select>
       </div>
 
-      <!-- Botones de filtro rápido por región -->
+      <!-- 🧩 v-for en botones de filtro rápido por región -->
       <div class="filtros-region">
         <button 
-          v-for="reg in ['Todas', ...regiones.filter(r => r !== 'Todas')]" 
+          v-for="reg in regiones" 
           :key="reg" 
           :class="['btn-region', { activo: (regionSeleccionada === reg) || (!regionSeleccionada && reg === 'Todas') }]"
           @click="seleccionarRegion(reg)"
@@ -104,23 +111,29 @@ const seleccionarRegion = (reg) => {
         </button>
       </div>
 
-      <!-- 📊 Contador dinámico de resultados -->
+      <!-- 📊 Contador dinámico de resultados con v-if -->
       <p class="contador-resultados" v-if="!cargando">
         Mostrando <strong>{{ paisesFiltrados.length }}</strong> países
       </p>
     </div>
 
-    <!-- Indicador de carga con v-if -->
+    <!-- ⏳ Indicador de carga con v-if -->
     <div v-if="cargando" class="estado">
+      <div class="spinner"></div>
       <p>⏳ Cargando países...</p>
     </div>
 
-    <!-- Mensaje si no hay resultados -->
-    <div v-else-if="paisesFiltrados.length === 0" class="estado">
+    <!-- 🚨 Mensaje de error con v-if (try/catch) -->
+    <div v-if="error" class="estado error">
+      <p>⚠️ {{ error }}</p>
+    </div>
+
+    <!-- 🔍 Mensaje si no hay resultados con v-else-if -->
+    <div v-else-if="!cargando && paisesFiltrados.length === 0" class="estado">
       <p>🔍 No se encontraron resultados para "{{ busqueda }}".</p>
     </div>
 
-    <!-- Lista de países con v-for -->
+    <!-- 🌍 Lista/tarjetas de países con v-for -->
     <div v-else class="tarjetas-grid">
       <div 
         v-for="pais in paisesFiltrados" 
@@ -128,7 +141,8 @@ const seleccionarRegion = (reg) => {
         class="tarjeta"
       >
         <div class="bandera-container">
-          <img :src="pais.flags?.svg || pais.flags?.png" :alt="`Bandera de ${pais.name?.common}`" />
+          <!-- v-bind (:src y :alt) para enlace dinámico de atributos -->
+          <img :src="pais.flags?.svg || pais.flags?.png" :alt="'Bandera de ' + pais.name?.common" />
         </div>
         <div class="tarjeta-info">
           <h2>{{ pais.name?.common }}</h2>

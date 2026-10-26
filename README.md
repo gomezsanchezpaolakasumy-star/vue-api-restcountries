@@ -1,38 +1,76 @@
-# vue-api-restcountries
+# 🌍 Explorador de Países — Vue 3 + REST Countries API
 
-This template should help get you started developing with Vue 3 in Vite.
+Aplicación web desarrollada con **Vue 3** que consume datos desde la API [REST Countries](https://restcountries.com/) y muestra información de países de forma dinámica e interactiva.
 
-## Recommended IDE Setup
+## 🔗 Enlaces
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- **Repositorio:** [GitHub](https://github.com/gomezsanchezpaolakasumy-star/vue-api-restcountries)
+- **Sitio publicado:** [GitHub Pages](https://gomezsanchezpaolakasumy-star.github.io/vue-api-restcountries/)
 
-## Recommended Browser Setup
+## ✨ Características
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+- Consumo de API REST Countries usando `fetch()` dentro de `onMounted()`
+- Variables reactivas con `ref()` y propiedades computadas con `computed()`
+- Búsqueda de países por nombre o región con `v-model`
+- Filtrado rápido por región con botones interactivos
+- Ordenamiento por nombre o población
+- Indicador de carga animado mientras se obtienen los datos
+- Mensaje cuando no hay resultados
+- Manejo de errores con `try/catch`
+- Diseño responsivo con CSS Grid y Flexbox
 
-## Customize configuration
+## 🧩 Tecnologías de Vue 3 utilizadas
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+| Directiva / API | Uso en el proyecto |
+|---|---|
+| `fetch()` | Petición asíncrona a la API REST Countries |
+| `onMounted()` | Ejecutar la llamada a la API al montar el componente |
+| `ref()` | Variables reactivas (países, búsqueda, carga, error) |
+| `computed()` | Filtrado y ordenamiento reactivo de países |
+| `v-for` | Renderizar la lista de tarjetas de países y botones de región |
+| `v-if` / `v-else-if` / `v-else` | Mostrar estados: cargando, error, sin resultados, lista |
+| `v-model` | Enlace bidireccional en campo de búsqueda y selector de orden |
+| `v-bind` (`:src`, `:alt`, `:class`) | Enlace dinámico de atributos HTML |
 
-## Project Setup
+## 🚀 Instalación y ejecución local
 
 ```sh
+# Clonar el repositorio
+git clone https://github.com/gomezsanchezpaolakasumy-star/vue-api-restcountries.git
+cd vue-api-restcountries
+
+# Instalar dependencias
 npm install
-```
 
-### Compile and Hot-Reload for Development
-
-```sh
+# Ejecutar en modo desarrollo
 npm run dev
 ```
 
-### Compile and Minify for Production
+## 📦 Compilar para producción
 
 ```sh
 npm run build
+```
+
+## 🌐 Desplegar en GitHub Pages
+
+```sh
+npm run deploy
+```
+
+## 📁 Estructura del Proyecto
+
+```
+vue-api-restcountries/
+├── public/
+│   └── favicon.ico
+├── src/
+│   ├── assets/
+│   │   └── style.css          # Estilos globales
+│   ├── App.vue                # Componente principal
+│   └── main.js                # Punto de entrada
+├── index.html                 # HTML principal
+├── vite.config.js             # Configuración de Vite
+├── package.json
+└── README.md
 ```
