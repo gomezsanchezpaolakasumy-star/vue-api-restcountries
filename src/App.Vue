@@ -6,8 +6,11 @@ const paises = ref([])
 const cargando = ref(true)
 const error = ref(null)
 const busqueda = ref('')
+const regionSeleccionada = ref('')
+const ordenSeleccionado = ref('nombre')
 
-// Datos de respaldo garantizados por si la red o la API externa bloquean el fetch en GitHub Pages
+const regiones = ['Todas', 'Americas', 'Europe', 'Asia', 'Africa', 'Oceania']
+
 const paisesRespaldo = [
   { name: { common: "México" }, capital: ["Ciudad de México"], region: "Americas", population: 128455567, flags: { svg: "https://flagcdn.com/mx.svg", png: "https://flagcdn.com/w320/mx.png" }, cca3: "MEX" },
   { name: { common: "Canadá" }, capital: ["Ottawa"], region: "Americas", population: 38246108, flags: { svg: "https://flagcdn.com/ca.svg", png: "https://flagcdn.com/w320/ca.png" }, cca3: "CAN" },
@@ -30,45 +33,91 @@ onMounted(async () => {
     const data = await res.json()
     paises.value = data
   } catch (err) {
-    // Si falla el fetch por restricciones del servidor, cargamos el respaldo automáticamente
-    console.warn('Usando datos de respaldo locales por restricción de red.')
     paises.value = paisesRespaldo
   } finally {
     cargando.value = false
   }
 })
 
+// Filtrado avanzado combinado (v-model y botones de región)
 const paisesFiltrados = computed(() => {
-  return paises.value.filter(pais => {
+  let resultado = paises.value.filter(pais => {
     const nombre = pais.name?.common?.toLowerCase() || ''
     const region = pais.region?.toLowerCase() || ''
     const filtro = busqueda.value.toLowerCase()
-    
-    return nombre.includes(filtro) || region.includes(filtro)
+
+    const coincideBusqueda = nombre.includes(filtro) || region.includes(filtro)
+    const coincideRegion = !regionSeleccionada.value || 
+      regionSeleccionada.value === 'Todas' || 
+      pais.region?.toLowerCase() === regionSeleccionada.value.toLowerCase()
+
+    return coincideBusqueda && coincideRegion
+  })
+
+  // Ordenamiento dinámico
+  return resultado.sort((a, b) => {
+    if (ordenSeleccionado.value === 'nombre') {
+      return (a.name?.common || '').localeCompare(b.name?.common || '')
+    } else if (ordenSeleccionado.value === 'poblacion-desc') {
+      return (b.population || 0) - (a.population || 0)
+    } else if (ordenSeleccionado.value === 'poblacion-asc') {
+      return (a.population || 0) - (b.population || 0)
+    }
+    return 0
   })
 })
+
+const seleccionarRegion = (reg) => {
+  regionSeleccionada.value = reg === 'Todas' ? '' : reg
+}
 </script>
 
 <template>
   <div class="contenedor">
     <h1>Explorador de Países</h1>
 
-    <div class="buscador">
-      <input 
-        type="text" 
-        v-model="busqueda" 
-        placeholder="Filtrar por nombre del país o región..."
-      />
+    <!-- Controles avanzados: Búsqueda, Filtros de Región y Ordenamiento -->
+    <div class="controles">
+      <div class="buscador-y-orden">
+        <input 
+          type="text" 
+          v-model="busqueda" 
+          placeholder="🔎 Buscar por nombre de país o región..."
+        />
+        
+        <select v-model="ordenSeleccionado" class="select-orden">
+          <option value="nombre">Ordenar por Nombre (A-Z)</option>
+          <option value="poblacion-desc">Mayor Población</option>
+          <option value="poblacion-asc">Menor Población</option>
+        </select>
+      </div>
+
+      <!-- Botones de filtro rápido por región -->
+      <div class="filtros-region">
+        <button 
+          v-for="reg in ['Todas', ...regiones.filter(r => r !== 'Todas')]" 
+          :key="reg" 
+          :class="['btn-region', { activo: (regionSeleccionada === reg) || (!regionSeleccionada && reg === 'Todas') }]"
+          @click="seleccionarRegion(reg)"
+        >
+          {{ reg }}
+        </button>
+      </div>
+
+      <!-- 📊 Contador dinámico de resultados -->
+      <p class="contador-resultados" v-if="!cargando">
+        Mostrando <strong>{{ paisesFiltrados.length }}</strong> países
+      </p>
     </div>
 
     <!-- Indicador de carga con v-if -->
     <div v-if="cargando" class="estado">
-      <p>Cargando países...</p>
+      <p>⏳ Cargando países...</p>
     </div>
 
-    <!-- Mensaje si no hay resultados con v-else-if -->
+    <!-- Mensaje si no hay resultados -->
     <div v-else-if="paisesFiltrados.length === 0" class="estado">
-      <p>No se encontraron resultados para "{{ busqueda }}".</p>
+      <p>🔍 No se encontraron resultados para "{{ busqueda }}".</p>
     </div>
 
     <!-- Lista de países con v-for -->
