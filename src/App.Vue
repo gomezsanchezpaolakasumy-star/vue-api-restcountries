@@ -1,4 +1,5 @@
-<script setup lang="js">
+<script setup>
+// @ts-nocheck
 import { ref, computed, onMounted } from 'vue'
 
 const paises = ref([])
@@ -8,7 +9,8 @@ const busqueda = ref('')
 
 onMounted(async () => {
   try {
-    const res = await fetch('https://api.restcountries.com/countries/v5?q=Canada&api-key=rc_live_demo&pretty=1')
+    // Usamos el endpoint público estandarizado para asegurar respuesta en GitHub Pages
+    const res = await fetch('https://restcountries.com/v3.1/all?fields=name,flags,capital,region,population,cca3')
     
     if (!res.ok) {
       throw new Error('No fue posible obtener los datos de la API')
@@ -61,7 +63,7 @@ const paisesFiltrados = computed(() => {
     <div v-else class="tarjetas-grid">
       <div 
         v-for="pais in paisesFiltrados" 
-        :key="pais.cca3 || pais.name.common" 
+        :key="pais.cca3 || pais.name?.common" 
         class="tarjeta"
       >
         <img :src="pais.flags?.svg || pais.flags?.png" :alt="`Bandera de ${pais.name?.common}`" />
